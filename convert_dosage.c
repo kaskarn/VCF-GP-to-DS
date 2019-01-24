@@ -2,12 +2,14 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define PATH_SIZE 200
+
 int main(int argc, char* argv[]){
 
 FILE *fp;
 
-char command[500]; 
-snprintf(command, 500, "bcftools query -f '%%INFO/AF\n[%%GP\n]' %s", argv[1]);
+char command[500];
+snprintf(command, 500, "bcftools query -f '%%INFO/AF\n[%%GP\n]' %s/%s", argv[1], argv[2]);
 
 fp = popen(command , "r");
 
@@ -16,17 +18,17 @@ if (fp == NULL) {
 }
 
 FILE *info;
-char file[70];
-snprintf(file, 70, "%s.infos", argv[1]);
+char file[PATH_SIZE];
+snprintf(file, PATH_SIZE, "%s", "/", ".infos", argv[1], argv[2]);
 info = fopen(file, "r");
 
 FILE *vcf;
-char final[70];
-snprintf(final, 70, "dosage-%s", argv[1]);
+char final[PATH_SIZE];
+snprintf(final, PATH_SIZE, "%s", "/", "dosage-%s", argv[1], argv[2]);
 vcf = fopen(final, "a");
 
 int line_read = -1;
-int indivs = atoi(argv[2]);
+int indivs = atoi(argv[3]);
 float dosage_line[indivs];
 char line[50];
 char info_line[847400];
@@ -42,7 +44,7 @@ while(fgets(line, 50 , fp) != NULL){
 		//printf("maf %f\n", af);
 	}
 	else{
-		
+
 		GP[0] = strtof(strtok(line, ","), &extra);
 		//printf("first: %f\n", GP[0]);
 		GP[1] = strtof(strtok(NULL, ","), &extra);
@@ -52,7 +54,7 @@ while(fgets(line, 50 , fp) != NULL){
 
 		if (af >= .5){
 			dosage_line[line_read] = GP[0] + GP[0] + GP[1];
-		}			
+		}
 		else{
 			dosage_line[line_read] = GP[2] + GP[2] + GP[1];
 		}
@@ -73,7 +75,7 @@ while(fgets(line, 50 , fp) != NULL){
 		fputs("\n", vcf);
 		line_read = -1;
 	}
- 
+
 }
 
 fclose(info);
